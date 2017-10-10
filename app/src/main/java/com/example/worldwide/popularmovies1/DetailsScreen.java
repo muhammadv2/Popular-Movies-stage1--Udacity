@@ -67,7 +67,6 @@ public class DetailsScreen extends AppCompatActivity {
 
     }
 
-
     /**
      * help formatting the date returned for the query to more readable date
      */

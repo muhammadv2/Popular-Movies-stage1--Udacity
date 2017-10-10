@@ -78,7 +78,7 @@ final class NetworkUtils {
     }
 
     /**
-     * The method response of handling the json returned from the request and extracting all the
+     * The method responsable of handling the json returned from the request and extracting all the
      * data needed and creating an Movie array with it and then return it
      */
     private static List<Movie> handleJson(String response) {

@@ -1,8 +1,7 @@
 package com.example.worldwide.popularmovies1;
 
 
-
-//Todo make it extend parcable
+//Todo make it implement parcable
 class Movie {
 
     private final String posterPath;

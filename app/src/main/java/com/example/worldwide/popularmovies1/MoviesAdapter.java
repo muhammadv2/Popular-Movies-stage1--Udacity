@@ -3,6 +3,7 @@ package com.example.worldwide.popularmovies1;
 
 import android.content.Context;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -36,7 +37,7 @@ public class MoviesAdapter extends RecyclerView.Adapter<MoviesAdapter.MoviesView
 
         mContext = context;
 
-        //member variable will be updated with the list size to be returned as getITemCount method
+        //member variable will be updated with the list size to be returned in getITemCount method
         if (data != null && data.size() > 0) mItemsInTheList = data.size();
 
         movies = data;
@@ -79,6 +80,7 @@ public class MoviesAdapter extends RecyclerView.Adapter<MoviesAdapter.MoviesView
 
     @Override
     public int getItemCount() {
+        Log.d("MoviesAdapter", "fetching" + mItemsInTheList);
         return mItemsInTheList; // Simply return the number of the list size
     }
 

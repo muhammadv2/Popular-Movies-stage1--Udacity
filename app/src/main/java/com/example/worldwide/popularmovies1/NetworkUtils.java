@@ -12,7 +12,6 @@ import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
-import java.util.List;
 
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
@@ -30,12 +29,12 @@ final class NetworkUtils {
 
     /**
      * fetchData method take the url as a String @param howToSort and do the http connection on it
-     * after creating it as a URL and then read the respond and pass it to Movies list after
+     * after creating it as a URL and then read the respond and pass it to Movies ArrayList after
      * handling the Json and then
      *
-     * @return List<Movie>
+     * @return ArrayList<Movie>
      */
-    static List<Movie> fetchData(String howToSort) {
+    static ArrayList<Movie> fetchData(String howToSort) {
 
         URL url = null;
         try {
@@ -78,16 +77,16 @@ final class NetworkUtils {
     }
 
     /**
-     * The method responsable of handling the json returned from the request and extracting all the
+     * The method responsableR of handling the json returned from the request and extracting all the
      * data needed and creating an Movie array with it and then return it
      */
-    private static List<Movie> handleJson(String response) {
+    private static ArrayList<Movie> handleJson(String response) {
 
         if (TextUtils.isEmpty(response)) {
             return null;
         }
 
-        List<Movie> movies = new ArrayList<>();
+        ArrayList<Movie> movies = new ArrayList<>();
 
         try {
             JSONObject baseJson = new JSONObject(response);

@@ -42,26 +42,28 @@ public class DetailsScreen extends AppCompatActivity {
 
         intent = getIntent();
 
-        settingInfoOnViews();
+        extractIntentExtrasAndSetTheViews();
 
     }
 
     /**
      * help setting the data associated with Intent as extras to our views
      */
-    private void settingInfoOnViews() {
+    private void extractIntentExtrasAndSetTheViews() {
 
-        String rating = intent.getStringExtra(Constants.USER_RATING);
+        Movie movie = intent.getParcelableExtra(Constants.MOVIE_OBJECT_TAG);
+
+        String rating = movie.getUserRating();
         float fl = Float.valueOf(rating); //turning the string into float to be used in rating bar
 
-        String date = intent.getStringExtra(Constants.RELEASE_DATE);
+        String date = movie.getReleaseDate();
 
-        mOriginalTitle.setText(intent.getStringExtra(Constants.ORIGINAL_TITLE));
+        mOriginalTitle.setText(movie.getOriginalTitle());
         mUserRating.setText(rating);
         mRatingBar.setRating(fl / 2); //dividing the value of the rate to be the same ratio in 5 star rating bar
-        mOverview.setText(intent.getStringExtra(Constants.OVERVIEW));
+        mOverview.setText(movie.getOverView());
         mReleaseDate.setText(dateFormat(date));
-        bindImage(intent.getStringExtra(Constants.MOVIE_POSTER_PATH));
+        bindImage(movie.getPosterPath());
 
         mRatingBar.setIsIndicator(true); // set the rating bar as indicator to prevent editing on it
 

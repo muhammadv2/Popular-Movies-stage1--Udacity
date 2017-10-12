@@ -24,6 +24,7 @@ public class MainActivity extends AppCompatActivity
         implements android.support.v4.app.LoaderManager.LoaderCallbacks<ArrayList<Movie>>,
         MoviesAdapter.OnItemClickListener {
 
+
     private static final String TAG = MainActivity.class.toString();
     //string to indicate which sorting mode must be performed it been default on most popular endPoint
     private static String howToSort = Constants.MOST_POPULAR_MOVIES;
@@ -37,53 +38,20 @@ public class MainActivity extends AppCompatActivity
     ProgressBar mProgressBar;
 
     //list of movies to hold data returned from the loader
-    private ArrayList<Movie> mListOfPopularMovies;
-    private ArrayList<Movie> mListOfTopRatedMovies;
+    private ArrayList<Movie> mListOfMovies;
 
-
-    private Boolean isHowToSortOnMostPopular() {
-        return howToSort.equals(Constants.MOST_POPULAR_MOVIES);
-    }
 
     /**
      * Save the parcelable ArrayList of our object to be able to use it later in onRestore method
+     *
      * @param outState is the Bundle will be saving our data
      */
     @Override
     protected void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
 
-        if (isHowToSortOnMostPopular()) {
-            outState.putParcelableArrayList(Constants.MOST_POPULAR_MOVIES, mListOfPopularMovies);
-            howToSort = Constants.MOST_POPULAR_MOVIES;
-
-        } else {
-            outState.putParcelableArrayList(Constants.TOP_RATED_MOVIES, mListOfTopRatedMovies);
-            howToSort = Constants.TOP_RATED_MOVIES;
-
-        }
-    }
-
-    /**
-     * Restore the instance we already saved and populate the list with the data and then pass it
-     * to the Adapter and show it in the recyclerView
-     */
-    @Override
-    protected void onRestoreInstanceState(Bundle savedInstanceState) {
-        super.onRestoreInstanceState(savedInstanceState);
-
-        if (savedInstanceState != null) {
-            if (isHowToSortOnMostPopular()) {
-                mListOfPopularMovies = savedInstanceState.getParcelableArrayList(Constants.MOST_POPULAR_MOVIES);
-                adapter = new MoviesAdapter(this, mListOfPopularMovies, this);
-                recyclerView.setAdapter(adapter);
-
-            } else {
-                mListOfTopRatedMovies = savedInstanceState.getParcelableArrayList(Constants.TOP_RATED_MOVIES);
-                adapter = new MoviesAdapter(this, mListOfTopRatedMovies, this);
-                recyclerView.setAdapter(adapter);
-            }
-        }
+        outState.putParcelableArrayList(Constants.BUNDLE_KEY_FOR_MOVIES, mListOfMovies);
+        howToSort = Constants.MOST_POPULAR_MOVIES;
     }
 
     @Override
@@ -95,18 +63,23 @@ public class MainActivity extends AppCompatActivity
         ButterKnife.inject(this);
 
 
-        //check if there internet connection and show a toast to the user if not
-        initTheLoaderIfThereConnection();
-
         //recyclerView setup
         recyclerView.setHasFixedSize(true);
         GridLayoutManager layoutManager = new GridLayoutManager(this, 2);
         recyclerView.setLayoutManager(layoutManager);
 
-        mProgressBar.setVisibility(View.VISIBLE);//progressBar find and set the visibility to visible until loader finishes
-
-
+        //if the Bundle reference is not null get its content and set the adapter and show the data
+        if (savedInstanceState != null && savedInstanceState.containsKey(Constants.BUNDLE_KEY_FOR_MOVIES)) {
+            mListOfMovies = savedInstanceState.getParcelableArrayList(Constants.BUNDLE_KEY_FOR_MOVIES);
+            adapter = new MoviesAdapter(this, mListOfMovies, this);
+            recyclerView.setAdapter(adapter);
+            mProgressBar.setVisibility(View.GONE); // if data will be shown there's no need to progressBar
+        } else {
+            //check if there internet connection and show a toast to the user if not
+            initTheLoaderIfThereConnection();
+        }
     }
+
 
     private void initTheLoaderIfThereConnection() {
 
@@ -126,17 +99,12 @@ public class MainActivity extends AppCompatActivity
     @Override
     public void onLoadFinished(Loader<ArrayList<Movie>> loader, ArrayList<Movie> data) {
 
-        //check if the ArrayList item not null and if it's not pass it to the adapter and show it
+        //check if the ArrayList not null and if it's not pass it to the adapter and show the data
         if (data != null && !data.isEmpty()) {
             mProgressBar.setVisibility(View.INVISIBLE); // make progressBar invisible after the data is loaded
             adapter = new MoviesAdapter(this, data, this);
             recyclerView.setAdapter(adapter);
-
-            if (isHowToSortOnMostPopular()) {
-                mListOfPopularMovies = data; // then pass the list of most popular movies
-            } else {
-                mListOfTopRatedMovies = data; // then pass the list of top rated movies
-            }
+            mListOfMovies = data; // then pass the list of most popular movies
         }
     }
 
@@ -160,21 +128,15 @@ public class MainActivity extends AppCompatActivity
 
             //when most popular movies button clicked
             case R.id.mb_most_popular_sort:
+
                 //first set the howToSort String to most popular movies constant
                 howToSort = Constants.MOST_POPULAR_MOVIES;
 
-                //check if the device is online and the list of movies is null
-                if (isOnline() && mListOfPopularMovies == null) {
+                //check if the device online then restart the loader to query the new end point
+                if (isOnline()) {
                     getSupportLoaderManager().restartLoader(Constants.MOVIES_LOADER, null, this);
                     Toast.makeText(this, R.string.most_popular_toast, Toast.LENGTH_LONG).show();
-
-                    //if the list of movies not null then populate the views with it
-                } else if (mListOfPopularMovies != null && mListOfPopularMovies.size() > 0) {
-                    adapter = new MoviesAdapter(this, mListOfPopularMovies, this);
-                    recyclerView.setAdapter(adapter);
-
-                    //if there's no connection and the list is null show toast to tell the user that app need internet
-                } else {
+                } else {//if there's no connection and the list is null show toast to tell the user that app need internet
                     Toast.makeText(this, R.string.internet_required, Toast.LENGTH_LONG).show();
                 }
                 break;
@@ -185,17 +147,10 @@ public class MainActivity extends AppCompatActivity
                 //first set the howToSort String to top rated movies constant
                 howToSort = Constants.TOP_RATED_MOVIES;
 
-                //check if the device online and the list of movies is null
-                if (isOnline() && mListOfTopRatedMovies == null) {
+                //check if the device online then restart the loader to query the new end point
+                if (isOnline()) {
                     getSupportLoaderManager().restartLoader(Constants.MOVIES_LOADER, null, this);
                     Toast.makeText(this, R.string.top_rated_toast, Toast.LENGTH_LONG).show();
-
-                    //if the list of movies not null then populate the views with it
-                } else if (mListOfTopRatedMovies != null && mListOfTopRatedMovies.size() > 0) {
-                    adapter = new MoviesAdapter(this, mListOfTopRatedMovies, this);
-                    recyclerView.setAdapter(adapter);
-
-                    //if there's no connection and the list is null show toast to tell the user that app need internet
                 } else {
                     Toast.makeText(this, R.string.internet_required, Toast.LENGTH_LONG).show();
                 }
@@ -207,14 +162,7 @@ public class MainActivity extends AppCompatActivity
     @Override
     public void onClick(int position) {
 
-        Movie movie;
-
-        //check which list must be populated using the howToSort boolean
-        if (isHowToSortOnMostPopular()) {
-            movie = mListOfPopularMovies.get(position);
-        } else {
-            movie = mListOfTopRatedMovies.get(position);
-        }
+        Movie movie = mListOfMovies.get(position);
 
         //instantiating an intent to start details activity passing it the parcelable Movie object
         Intent intent = new Intent(this, DetailsScreen.class);
